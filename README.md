@@ -1,102 +1,135 @@
-# High-Availability-Campus-Network
+# High-Availability Campus Network
 
-A reference design and configuration repository for building a highly available campus network. This project contains topology diagrams, configuration examples, automation playbooks, and validation tests to help deploy resilient Layer 2/3 campus networks with redundant distribution/core, high-availability services, and monitoring.
+This repository contains a reference design, lab topology, configurations and validation artifacts for a High-Availability Campus Network built with HSRP, EtherChannel (LACP), and RPVST+.
+
+## Project overview
+
+This project demonstrates a highly available campus network using:
+
+- HSRP for gateway redundancy (Active/Standby)
+- EtherChannel (LACP) for link aggregation and higher bandwidth
+- RPVST+ and PortFast/BPDU Guard for fast STP convergence and loop prevention
+- Inter-VLAN routing with SVIs and DHCP for end hosts
+
+The repo contains topology diagrams, GNS3/EVE-NG-compatible files, configuration snippets and verification screenshots.
 
 ## Goals
 
-- Provide repeatable, well-documented configuration patterns for campus aggregation and core redundancy
-- Demonstrate device-level high-availability (VRRP/HSRP), link redundancy (LACP, MLAG), and routing resilience (OSPF/BGP)
-- Include automation examples (Ansible) to provision and validate configurations
-- Offer testing and troubleshooting guidance for common failure scenarios
+- Provide repeatable configuration patterns for campus aggregation and core redundancy
+- Demonstrate device-level high availability (HSRP), link redundancy (LACP) and routing resilience (OSPF)
+- Include lab-ready configs and verification steps to validate failover and convergence
 
-## Repository layout
+## Quickstart (lab)
 
-- docs/ — design notes, diagrams, and topology drawings
-- configs/ — example device configuration templates (IOS, NX-OS, Junos)
-- ansible/ — playbooks and inventory for automated deployment and validation
-- tests/ — scripts and test cases for reachability, failover, and performance checks
-- lab/ — sample topology definitions for network emulators (EVE-NG, GNS3)
-
-(If any of these directories are missing in this repository, they are intended locations for future content.)
-
-## Key concepts
-
-- Control-plane redundancy: using OSPF or BGP with graceful restart and proper timers to speed convergence
-- Device HA: VRRP or HSRP for gateway redundancy; use object tracking for active/standby failover
-- Link redundancy: LACP across uplinks, MLAG (or vPC) where supported to provide active-active layer-2
-- Loop prevention & segmentation: implement VLAN design with SVI and private VLANs where required
-- Automation & testing: codify configurations as templates and verify idempotency with playbooks
-
-## Example quickstart (lab)
-
-1. Clone the repository:
+1. Clone the repo and enter the directory:
 
    git clone https://github.com/kamleshsande85/High-Availability-Campus-Network.git
    cd High-Availability-Campus-Network
 
-2. Review the lab topology in lab/topology.yml (or docs/topology.drawio) and start your emulator (EVE-NG/GNS3).
+2. Open the topology in GNS3 or your preferred emulator (see `GNS File/` and `Screenshots/Topology/`).
 
-3. Install Ansible and required collections:
+3. If using Ansible (optional):
 
    pip install -r ansible/requirements.txt
-
-4. Update `ansible/inventory` with lab device IPs and credentials.
-
-5. Run the playbook to deploy base configurations:
-
+   update `ansible/inventory` with device IPs and credentials
    ansible-playbook -i ansible/inventory ansible/site.yml
 
-6. Validate basic connectivity and HA state with provided tests:
+4. Run validation scripts:
 
    ./tests/check_reachability.sh
    ./tests/check_vrrp_state.sh
 
-## Example VRRP snippet (concept)
+## Key highlights (from Project highlight availibility)
 
-Configure VRRP on distribution switches for a VLAN SVI (replace variables accordingly):
+- HSRP configured for gateway redundancy with object tracking and preempt to ensure predictable active/standby behavior
+- EtherChannel (LACP) used for inter-core aggregation for redundancy and more bandwidth
+- RPVST+ for fast per-VLAN convergence; PortFast + BPDU Guard enabled on access ports
+- Sub-second failover validated in lab topology
 
-interface Vlan100
-  ip address 10.0.100.2/24
-  vrrp 100 ip 10.0.100.1
-  vrrp 100 priority 110
-  vrrp 100 preempt
+## IP addressing (summary)
 
-On the peer, set priority lower (e.g., 100) so the higher-priority switch becomes active.
+| VLAN | Network | Mask | Virtual Gateway (HSRP) | CORE-SW1 | CORE-SW2 |
+|------|---------|------|------------------------|----------|----------|
+| VLAN 10 (Mgmt) | 172.16.4.0/25 | 255.255.255.128 | 172.16.4.1 | 172.16.4.2 | 172.16.4.3 |
+| VLAN 20 (HR)   | 172.16.4.128/25 | 255.255.255.128 | 172.16.4.129 | 172.16.4.130 | 172.16.4.131 |
+| VLAN 30 (Finance) | 172.16.5.0/25 | 255.255.255.128 | 172.16.5.1 | 172.16.5.2 | 172.16.5.3 |
+| VLAN 40 (Engg) | 172.16.5.128/25 | 255.255.255.128 | 172.16.5.129 | 172.16.5.130 | 172.16.5.131 |
 
-## Monitoring & Observability
+HSRP priority plan: CORE-SW1 active for VLANs 10 & 20 (higher priority), CORE-SW2 active for VLANs 30 & 40.
 
-- Export telemetry via SNMP/NETCONF/gNMI or stream to a time-series platform (Prometheus/Grafana)
-- Use syslog aggregation and flow telemetry (NetFlow/sFlow) to analyze traffic patterns
-- Monitor HA state (VRRP/HSRP), interface counters, and routing adjacency for early warnings
+## Example configuration snippets
 
-## Testing & Validation
+Access switch trunk (example):
 
-- Simulate link and device failures in the lab and verify traffic continuity and convergence time
-- Run ECMP and path validation tests for routing symmetry and blackhole detection
-- Validate control-plane and management-plane isolation so that user traffic and protocols do not interfere
+```
+interface gi3/2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 1
+ switchport trunk allowed vlan 10,20,30,40
+ no shutdown
+```
 
-## Troubleshooting tips
+Core switch EtherChannel and HSRP (example):
 
-- When HA failovers behave unexpectedly: check object-tracking, interface priorities, and preempt settings
-- For slow routing convergence: tune OSPF/BGP timers and verify no excessive SPF/LSA churn
-- For L2 loops: verify MLAG/vPC consistency, VLAN allowed lists, and STP configuration
+```
+! EtherChannel (LACP) to peer
+interface range gi0/0 - 1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40
+ channel-group 1 mode active
+!
+interface port-channel 1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40
+!
+interface Vlan10
+ ip address 172.16.4.2 255.255.255.128
+ standby 10 ip 172.16.4.1
+ standby 10 priority 150
+ standby 10 preempt
+```
 
-## Contributing
+## Verification & common commands
 
-Contributions are welcome. Please:
+- Access switches: `show vlan brief`, `show interface trunk`, `show cdp neighbors`, `show spanning-tree brief`
+- Core switches: `show standby brief`, `show ip ospf neighbor`, `show etherchannel summary`, `show spanning-tree root`
+- End hosts: `ping <gateway>` (HSRP virtual IP), DHCP request and inter-VLAN ping tests
 
-1. Open an issue to discuss major changes or proposals.
-2. Fork the repository, make changes in a feature branch, and submit a pull request with a clear description and testing notes.
+Screenshots and step-by-step verification are available under `Screenshots/`.
+
+## Lessons learned
+
+- HSRP requires consistent VLAN configuration on peers for reliable operation
+- EtherChannel in GNS3/EVE-NG behaves more predictably with LACP (active/passive)
+- PortFast + BPDU Guard reduces STP convergence delays on access ports
+- Native VLAN mismatches cause CDP/trunking issues — always verify `show interface trunk`
+
+## Future improvements
+
+- Add MLS QoS for traffic prioritization
+- Implement DHCP Snooping and other security features
+- Extend topology and configurations to support IPv6 and HSRPv6
+
+## Repo structure
+
+High-Availability-Campus-Network/
+- README.md
+- Project highlight availibility .md
+- GNS File/
+- Screenshots/
+- (Optional) ansible/, configs/, docs/, tests/ — see repository for available directories
 
 ## License
 
-This repository is provided under the MIT License unless otherwise specified in individual files.
+MIT License — see LICENSE file if present.
 
 ---
 
-If you'd like, I can also:
+If you want, I can:
+- Add a short topology diagram (drawio) into docs/ or lab/
+- Add sample Ansible inventory and a minimal site.yml to bootstrap the lab
+- Add example IOS/NX-OS config files into configs/
 
-- Add a topology diagram file (drawio) and a sample Ansible inventory and playbook to bootstrap a lab.
-- Create example configuration files for IOS/NX-OS/Junos for the most common topology (2-core, 2-distribution, access layer).
-
-Tell me which additions you'd like and I'll add them next.
+Tell me which addition you'd like next and I'll add it.
