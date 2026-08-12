@@ -1,7 +1,7 @@
 # 📁 Project 2: High-Availability Campus Network
 
 ## 📌 Project Overview
-This project implements a **highly available campus network** using **HSRP** for gateway redundancy, **EtherChannel (LACP)** for link aggregation, and **RPVST+** for fast convergence. The design eliminates single points of failure at the distribution and access layers.
+This project implements a **highly available campus network** using **HSRP** for gateway redundancy, **EtherChannel (LACP)** for link aggregation, and **RPVST+** for fast convergence. The design eliminates single points of failure and ensures seamless failover.
 
 ## 🎯 Objectives
 - Provide **redundant default gateways** using HSRP.
@@ -228,84 +228,54 @@ write memory
 
 ## ✅ Verification Steps & Screenshots
 
-### 1. Access Switches Verification (`ACCE-SW1` & `ACCE-SW2`)
+### 1. Access Switches Verification (`ACC-SW1` & `ACC-SW2`)
 
 | Command | Purpose | Screenshot |
 |---------|---------|------------|
-| `show vlan brief` | Verify VLAN database and port assignments | ![VLAN Brief](./screenshots/acce-vlan-brief.png) |
-| `show interface trunk` | Verify trunking status and allowed VLANs | ![Trunk Status](./screenshots/acce-trunk.png) |
-| `show ip interface brief` | Verify interface status and line protocol | ![IP Brief](./screenshots/acce-ip-brief.png) |
-| `show spanning-tree brief` | Verify STP status and port states | ![STP Brief](./screenshots/acce-stp.png) |
-| `show cdp neighbors` | Verify CDP neighbors connected to Core Switches | ![CDP Neighbors](./screenshots/acce-cdp.png) |
+| `show vlan brief` | Verify VLAN database and port assignments | ![VLAN Brief](./Screenshots/ACC-SW1/1.%20Verify%20VLAN%20database%20and%20port%20assignments.png) |
+| `show interface trunk` | Verify trunking status and allowed VLANs | ![Trunk Status](./Screenshots/ACC-SW1/2.%20Verify%20trunking%20status%20and%20allowed%20VLANs%20on%20uplinks.png) |
+| `show ip interface brief` | Verify interface status and line protocol | ![IP Brief](./Screenshots/ACC-SW1/3.%20Verify%20interface%20status%20and%20line%20protocol.png) |
+| `show spanning-tree brief` | Verify STP status and port states | ![STP Brief](./Screenshots/ACC-SW1/show%20spanning-tree%20brief) |
+| `show cdp neighbors` | Verify CDP neighbors connected to Core Switches | ![CDP Neighbors](./Screenshots/ACC-SW1/show%20cdp%20neighbors.png) |
 
 ---
 
 ### 2. Core Switches Verification (`CORE-SW1` & `CORE-SW2`)
 
+#### CORE-SW1 Screenshots:
 | Command | Purpose | Screenshot |
 |---------|---------|------------|
-| `show standby brief` | Verify HSRP Active/Standby states and Virtual IPs | ![HSRP Brief](./screenshots/core-hsrp-brief.png) |
-| `show standby` | Verify detailed HSRP configuration, priorities, and timers | ![HSRP Detail](./screenshots/core-hsrp-detail.png) |
-| `show ip ospf neighbor` | Verify OSPF neighbor adjacency (should be FULL) | ![OSPF Neighbor](./screenshots/core-ospf-neighbor.png) |
-| `show ip route ospf` | Verify dynamic routes learned via OSPF | ![OSPF Routes](./screenshots/core-ospf-routes.png) |
-| `show ip interface brief` | Verify IP addresses and status of all SVIs | ![Core IP Brief](./screenshots/core-ip-brief.png) |
-| `show interface trunk` | Verify trunking status on inter-core and downlink interfaces | ![Core Trunk](./screenshots/core-trunk.png) |
-| `show spanning-tree root` | Verify STP root bridge information for all VLANs | ![STP Root](./screenshots/core-stp-root.png) |
-| `show cdp neighbors` | Verify CDP neighbors (Routers and Access Switches) | ![Core CDP](./screenshots/core-cdp.png) |
+| `show standby brief` | Verify HSRP Active/Standby states and Virtual IPs | ![HSRP Brief](./Screenshots/CORE-SW1/1.%20Verify%20HSRP%20summary.png) |
+| `show standby` | Verify detailed HSRP configuration, priorities, and timers | ![HSRP Detail](./Screenshots/CORE-SW1/2.%20Verify%20detailed%20HSRP%20configuration,%20priorities,%20and%20timers.png) |
+| `show ip ospf neighbor` | Verify OSPF neighbor adjacency (should be FULL) | ![OSPF Neighbor](./Screenshots/CORE-SW1/3.%20Verify%20OSPF%20neighbor%20adjacency%20status.png) |
+| `show ip interface brief` | Verify IP addresses and status of all SVIs | ![Core IP Brief](./Screenshots/CORE-SW1/5.%20Verify%20IP%20addresses%20and%20status%20of%20all%20SVIs%20(VLAN%20interfaces).png) |
+| `show interface trunk` | Verify trunking status on inter-core and downlink interfaces | ![Core Trunk](./Screenshots/CORE-SW1/6.%20Verify%20trunking%20status%20on%20inter-core%20and%20downlink%20interfaces.png) |
+| `show spanning-tree root` | Verify STP root bridge information for all VLANs | ![STP Root](./Screenshots/CORE-SW1/7.%20Verify%20Spanning%20Tree%20root%20bridge%20information%20for%20all%20VLANs.png) |
+| `show cdp neighbors` | Verify CDP neighbors (Routers and Access Switches) | ![Core CDP](./Screenshots/CORE-SW1/8.%20Verify%20CDP%20neighbors%20(Routers%20and%20Access%20Switches).png) |
+
+#### CORE-SW2 Screenshots:
+| Command | Purpose | Screenshot |
+|---------|---------|------------|
+| `show standby brief` | Verify HSRP Active/Standby states and Virtual IPs | ![HSRP Brief](./Screenshots/CORE-SW2/1.%20Verify%20HSRP%20summary%20.png) |
+| `show standby` | Verify detailed HSRP configuration, priorities, and timers | ![HSRP Detail](./Screenshots/CORE-SW2/2.%20Verify%20detailed%20HSRP%20configuration,%20priorities,%20and%20timers.png) |
+| `show ip ospf neighbor` | Verify OSPF neighbor adjacency (State should be FULL) | ![OSPF Neighbor](./Screenshots/CORE-SW2/3.%20Verify%20OSPF%20neighbor%20adjacency%20status%20(State%20should%20be%20FULL).png) |
+| `show ip route ospf` | Verify dynamic routes learned via OSPF | ![OSPF Routes](./Screenshots/CORE-SW2/4.%20Verify%20dynamic%20routes%20learned%20via%20OSPF.png) |
+| `show ip interface brief` | Verify IP addresses and status of all SVIs | ![Core IP Brief](./Screenshots/CORE-SW2/5.%20Verify%20IP%20addresses%20and%20status%20of%20all%20SVIs%20(VLAN%20interfaces).png) |
+| `show interface trunk` | Verify trunking status on inter-core and downlink interfaces | ![Core Trunk](./Screenshots/CORE-SW2/6.%20Verify%20trunking%20status%20on%20inter-core%20and%20downlink%20interfaces.png) |
+| `show spanning-tree root` | Verify STP root bridge information for all VLANs | ![STP Root](./Screenshots/CORE-SW2/7.%20Verify%20Spanning%20Tree%20root%20bridge%20information%20for%20all%20VLANs.png) |
+| `show cdp neighbors` | Verify CDP neighbors (Routers and Access Switches) | ![Core CDP](./Screenshots/CORE-SW2/8.%20Verify%20CDP%20neighbors%20(Routers%20and%20Access%20Switches).png) |
 
 ---
 
-### 3. Core Routers Verification (`CORE-Router-1` & `CORE-Router-2`)
+### 3. End Host PCs / Clients (VLAN 10, 20, 30, 40) - PC2 Verification
 
-| Command | Purpose | Screenshot |
-|---------|---------|------------|
-| `show ip ospf neighbor` | Verify OSPF neighbor adjacency with Core Switches | ![Router OSPF](./screenshots/router-ospf.png) |
-| `show ip route` | Verify complete IP routing table | ![Router Route](./screenshots/router-route.png) |
-| `show ip interface brief` | Verify IP addresses and operational status | ![Router IP Brief](./screenshots/router-ip-brief.png) |
-| `show ip dhcp binding` | Verify active DHCP IP address leases | ![DHCP Binding](./screenshots/router-dhcp-binding.png) |
-| `show ip dhcp pool` | Verify DHCP pool statistics and utilization | ![DHCP Pool](./screenshots/router-dhcp-pool.png) |
-
----
-
-### 4. End Host PCs / Clients (VLAN 10, 20, 30, 40)
-
-| Command | Purpose | Screenshot |
-|---------|---------|------------|
-| `ip dhcp` | Request IP from DHCP server | ![DHCP Request](./screenshots/pc-dhcp.png) |
-| `show ip` | Verify assigned IP address and gateway | ![PC IP](./screenshots/pc-ip.png) |
-| `ping 172.16.5.11` | Ping another host in different VLAN | ![Ping Host](./screenshots/pc-ping-host.png) |
-| `ping 1.1.1.1` | Ping Loopback on Core Router | ![Ping Router](./screenshots/pc-ping-router.png) |
-| `trace 1.1.1.1` | Traceroute to Core Router | ![Traceroute](./screenshots/pc-traceroute.png) |
-
----
-
-### 5. Live HSRP Failover Test
-
-#### Step 1: Start Continuous Ping
-```cmd
-ping -t 172.16.4.1
-```
-![Continuous Ping](./screenshots/failover-ping-start.png)
-
-#### Step 2: Shut Down Active SVI on CORE-SW1
-```ios
-CORE-SW1(config)# interface vlan 10
-CORE-SW1(config-if)# shutdown
-```
-![Active Shutdown](./screenshots/failover-shutdown.png)
-
-#### Step 3: Verify Standby Switch Transitions to Active
-```ios
-CORE-SW2# show standby brief
-```
-![Failover Standby](./screenshots/failover-standby.png)
-
-#### Step 4: Restore Interface on CORE-SW1 (Preempt Verification)
-```ios
-CORE-SW1(config)# interface vlan 10
-CORE-SW1(config-if)# no shutdown
-```
-![Restore Active](./screenshots/failover-restore.png)
+| Step | Purpose | Screenshot |
+|------|---------|------------|
+| **Step 1** | Request IP from DHCP server | ![DHCP Request](./Screenshots/PC2/Step%201:%20Request%20IP%20address%20from%20DHCP%20Server.png) |
+| **Step 2** | Verify assigned IP address, gateway and DHCP server | ![PC IP](./Screenshots/PC2/Step%202:%20Display%20assigned%20IP,%20subnet%20mask,%20default%20gateway,%20and%20DHCP%20server%20IP.png) |
+| **Step 3** | Test local gateway connectivity (HSRP Virtual IP) | ![Ping Gateway](./Screenshots/PC2/Step%203:%20Test%20local%20gateway%20connectivity%20(HSRP%20Virtual%20IP).png) |
+| **Step 4** | Test Inter-VLAN routing (Ping PC in another VLAN) | ![Ping Host](./Screenshots/PC2/Step%204:%20Test%20Inter-VLAN%20routing%20(Ping%20PC%20located%20in%20another%20VLAN).png) |
+| **Step 6** | Trace packet path through active HSRP Core Switch | ![Traceroute](./Screenshots/PC2/Step%206:%20Trace%20the%20packet%20path%20to%20verify%20routing%20through%20the%20active%20HSRP%20Core%20Switch.png) |
 
 ---
 
@@ -320,8 +290,6 @@ CORE-SW1(config-if)# no shutdown
 | | `show ip ospf neighbor` | OSPF adjacency |
 | | `show etherchannel summary` | EtherChannel status |
 | | `show spanning-tree root` | STP root bridge |
-| **Core Routers** | `show ip route` | Routing table |
-| | `show ip dhcp binding` | DHCP leases |
 | **PCs** | `ping <gateway>` | Connectivity test |
 
 ---
@@ -359,22 +327,40 @@ CORE-SW1(config-if)# no shutdown
 ## 📂 GitHub Repository Structure
 
 ```
-Project2-High-Availability/
+High-Availability-Campus-Network/
 ├── README.md
-├── configs/
-│   ├── CORE-SW1.txt
-│   ├── CORE-SW2.txt
-│   └── ACC-SW1.txt
-├── screenshots/
-│   ├── acce-vlan-brief.png
-│   ├── acce-trunk.png
-│   ├── core-hsrp-brief.png
-│   ├── core-ospf-neighbor.png
-│   ├── pc-ping-host.png
-│   ├── failover-ping-start.png
-│   └── failover-standby.png
-└── topology/
-    └── network-diagram.png
-```
+├── Project highlight availibility .md
+├── GNS File/
+└── Screenshots/
+    ├── ACC-SW1/
+    │   ├── 1. Verify VLAN database and port assignments.png
+    │   ├── 2. Verify trunking status and allowed VLANs on uplinks.png
+    │   ├── 3. Verify interface status and line protocol.png
+    │   ├── show cdp neighbors.png
+    │   └── show spanning-tree brief
+    ├── CORE-SW1/
+    │   ├── 1. Verify HSRP summary.png
+    │   ├── 2. Verify detailed HSRP configuration, priorities, and timers.png
+    │   ├── 3. Verify OSPF neighbor adjacency status.png
+    │   ├── 5. Verify IP addresses and status of all SVIs (VLAN interfaces).png
+    │   ├── 6. Verify trunking status on inter-core and downlink interfaces.png
+    │   ├── 7. Verify Spanning Tree root bridge information for all VLANs.png
+    │   └── 8. Verify CDP neighbors (Routers and Access Switches).png
+    ├── CORE-SW2/
+    │   ├── 1. Verify HSRP summary .png
+    │   ├── 2. Verify detailed HSRP configuration, priorities, and timers.png
+    │   ├── 3. Verify OSPF neighbor adjacency status (State should be FULL).png
+    │   ├── 4. Verify dynamic routes learned via OSPF.png
+    │   ├── 5. Verify IP addresses and status of all SVIs (VLAN interfaces).png
+    │   ├── 6. Verify trunking status on inter-core and downlink interfaces.png
+    │   ├── 7. Verify Spanning Tree root bridge information for all VLANs.png
+    │   └── 8. Verify CDP neighbors (Routers and Access Switches).png
+    ├── PC2/
+    │   ├── Step 1: Request IP address from DHCP Server.png
+    │   ├── Step 2: Display assigned IP, subnet mask, default gateway, and DHCP server IP.png
+    │   ├── Step 3: Test local gateway connectivity (HSRP Virtual IP).png
+    │   ├── Step 4: Test Inter-VLAN routing (Ping PC located in another VLAN).png
+    │   └── Step 6: Trace the packet path to verify routing through the active HSRP Core Switch.png
+    └── Topology/
 
 ---
