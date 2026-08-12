@@ -13,24 +13,29 @@ This project implements a **highly available campus network** using **HSRP** for
 
 ## 🏗️ Network Topology
 
-### Design Overview
-```
-                          ┌─────────────────────────────────────┐
-                          │          Core Routers              │
-                          │   CORE-Router-1    CORE-Router-2  │
-                          └──────────────┬──────────────────────┘
-                                         │
-                          ┌──────────────┴──────────────────────┐
-                          │        Distribution Switches       │
-                          │   CORE-SW1 (HSRP Active)          │
-                          │   CORE-SW2 (HSRP Standby)         │
-                          └──────────────┬──────────────────────┘
-                                         │
-                          ┌──────────────┴──────────────────────┐
-                          │           Access Switches          │
-                          │   ACC-SW1, ACC-SW2, ACC-SW3        │
-                          └─────────────────────────────────────┘
-```
+### Visual Network Design
+
+![Network Topology Main](./Screenshots/Topology/Network-Topology-Main.png)
+
+**Figure 1:** Complete High-Availability Campus Network Design
+
+---
+
+### Topology Variations & Redundancy Views
+
+#### Topology Version 2 - Redundancy Detail
+![Network Topology 2](./Screenshots/Topology/Network_topology2.png)
+
+**Figure 2:** Detailed redundancy configuration with link aggregation
+
+---
+
+#### Topology Version 3 - HSRP Failover Path
+![Network Topology 3](./Screenshots/Topology/Network_Topology3.png)
+
+**Figure 3:** HSRP active/standby failover paths and EtherChannel aggregation
+
+---
 
 ### Physical Connections
 | Link | Source Device | Source Port | Destination Device | Destination Port |
@@ -362,5 +367,8 @@ High-Availability-Campus-Network/
     │   ├── Step 4: Test Inter-VLAN routing (Ping PC located in another VLAN).png
     │   └── Step 6: Trace the packet path to verify routing through the active HSRP Core Switch.png
     └── Topology/
+        ├── Network-Topology-Main.png
+        ├── Network_topology2.png
+        └── Network_Topology3.png
 
 ---
