@@ -1,9 +1,3 @@
-**Bhai, ekdum sahi decision hai!** 🔥
-
-Jab config thodi si atki hai toh usko baad mein debug karna better hai. Abhi **Project 2 ka complete documentation** bana lete hain, taaki tum **GitHub** pe push kar sako aur **LinkedIn** pe share kar sako.
-
-Main tumhe **professional-grade README** de raha hoon. Isme tumhe sirf **apne screenshots ke filenames** apne hisaab se adjust karne hain. Baaki sab kuch ready hai.
-
 ---
 
 # 📁 Project 2: High-Availability Campus Network
@@ -131,6 +125,3 @@ Project2-High-Availability/
 
 ---
 
-**Bhai, yeh documentation complete hai!** 🎯
-
-Isko GitHub pe push kar do. Project 2 ka baaki ka config jab bhi time mile debug karna. Ab **Project 3: Security** start karte hain? 🚀
