@@ -1,67 +1,92 @@
-# High-Availability Campus Network
 
-This repository contains a reference design, lab topology, configurations and validation artifacts for a High-Availability Campus Network built with HSRP, EtherChannel (LACP), and RPVST+.
+# 🏗️ High-Availability Campus Network
 
-## Project overview
+[![GNS3](https://img.shields.io/badge/GNS3-2.2-green)](https://www.gns3.com/)
+[![Cisco IOS](https://img.shields.io/badge/Cisco-IOSv15-blue)](https://www.cisco.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This project demonstrates a highly available campus network using:
+A complete **High-Availability Campus Network** design using **HSRP**, **EtherChannel (LACP)**, and **RPVST+** to eliminate single points of failure at the Distribution and Access layers.
 
-- HSRP for gateway redundancy (Active/Standby)
-- EtherChannel (LACP) for link aggregation and higher bandwidth
-- RPVST+ and PortFast/BPDU Guard for fast STP convergence and loop prevention
-- Inter-VLAN routing with SVIs and DHCP for end hosts
+---
 
-The repo contains topology diagrams, GNS3/EVE-NG-compatible files, configuration snippets and verification screenshots.
+## 📌 Project Overview
 
-## Goals
+This project demonstrates a **production-ready campus network** with:
+- ✅ **HSRP** — Gateway redundancy with Active/Standby failover (sub-second)
+- ✅ **EtherChannel (LACP)** — Link aggregation for bandwidth and redundancy
+- ✅ **RPVST+** — Fast STP convergence with PortFast + BPDU Guard
+- ✅ **Inter-VLAN Routing** — SVIs for routing between VLANs
+- ✅ **DHCP** — Automatic IP assignment for end devices
 
-- Provide repeatable configuration patterns for campus aggregation and core redundancy
-- Demonstrate device-level high availability (HSRP), link redundancy (LACP) and routing resilience (OSPF)
-- Include lab-ready configs and verification steps to validate failover and convergence
+---
 
-## Quickstart (lab)
+## 🎯 Objectives
 
-1. Clone the repo and enter the directory:
+| Objective | Implementation |
+|-----------|----------------|
+| **Gateway Redundancy** | HSRP with Active/Standby and Preempt |
+| **Link Redundancy** | EtherChannel (LACP) between Core Switches |
+| **Fast Convergence** | RPVST+ with PortFast + BPDU Guard |
+| **Scalability** | 4 VLANs (Management, HR, Finance, Engineering) |
+| **Resilience** | OSPF for dynamic routing to Core Routers |
 
-   git clone https://github.com/kamleshsande85/High-Availability-Campus-Network.git
-   cd High-Availability-Campus-Network
+---
 
-2. Open the topology in GNS3 or your preferred emulator (see `GNS File/` and `Screenshots/Topology/`).
-
-3. If using Ansible (optional):
-
-   pip install -r ansible/requirements.txt
-   update `ansible/inventory` with device IPs and credentials
-   ansible-playbook -i ansible/inventory ansible/site.yml
-
-4. Run validation scripts:
-
-   ./tests/check_reachability.sh
-   ./tests/check_vrrp_state.sh
-
-## Key highlights (from Project highlight availibility)
-
-- HSRP configured for gateway redundancy with object tracking and preempt to ensure predictable active/standby behavior
-- EtherChannel (LACP) used for inter-core aggregation for redundancy and more bandwidth
-- RPVST+ for fast per-VLAN convergence; PortFast + BPDU Guard enabled on access ports
-- Sub-second failover validated in lab topology
-
-## IP addressing (summary)
-
-| VLAN | Network | Mask | Virtual Gateway (HSRP) | CORE-SW1 | CORE-SW2 |
-|------|---------|------|------------------------|----------|----------|
-| VLAN 10 (Mgmt) | 172.16.4.0/25 | 255.255.255.128 | 172.16.4.1 | 172.16.4.2 | 172.16.4.3 |
-| VLAN 20 (HR)   | 172.16.4.128/25 | 255.255.255.128 | 172.16.4.129 | 172.16.4.130 | 172.16.4.131 |
-| VLAN 30 (Finance) | 172.16.5.0/25 | 255.255.255.128 | 172.16.5.1 | 172.16.5.2 | 172.16.5.3 |
-| VLAN 40 (Engg) | 172.16.5.128/25 | 255.255.255.128 | 172.16.5.129 | 172.16.5.130 | 172.16.5.131 |
-
-HSRP priority plan: CORE-SW1 active for VLANs 10 & 20 (higher priority), CORE-SW2 active for VLANs 30 & 40.
-
-## Example configuration snippets
-
-Access switch trunk (example):
+## 🏗️ Network Topology
 
 ```
+                          ┌─────────────────────────────────────┐
+                          │          Core Routers              │
+                          │   CORE-Router-1    CORE-Router-2  │
+                          └──────────────┬──────────────────────┘
+                                         │
+                          ┌──────────────┴──────────────────────┐
+                          │        Distribution Switches       │
+                          │   CORE-SW1 (HSRP Active)          │
+                          │   CORE-SW2 (HSRP Standby)         │
+                          └──────────────┬──────────────────────┘
+                                         │
+                          ┌──────────────┴──────────────────────┐
+                          │           Access Switches          │
+                          │   ACC-SW1, ACC-SW2, ACC-SW3        │
+                          └─────────────────────────────────────┘
+```
+
+**[📷 View Topology Diagram](./Screenshots/Topology/topology.png)**
+
+### Physical Connections
+
+| Link | Source Device | Source Port | Destination Device | Destination Port |
+|------|---------------|-------------|-------------------|------------------|
+| **EtherChannel (LACP)** | CORE-SW1 | Gi0/0, Gi0/1 | CORE-SW2 | Gi0/0, Gi0/1 |
+| **Trunk 1** | CORE-SW1 | Gi0/3 | ACC-SW1 | Gi3/2 |
+| **Trunk 2** | CORE-SW2 | Gi0/3 | ACC-SW2 | Gi3/2 |
+
+---
+
+## 📊 IP Addressing Scheme
+
+| VLAN | Network | Subnet Mask | Usable IPs | Virtual Gateway (HSRP) | CORE-SW1 | CORE-SW2 |
+|------|---------|-------------|------------|------------------------|----------|----------|
+| **VLAN 10 (Mgmt)** | 172.16.4.0/25 | 255.255.255.128 | 126 | 172.16.4.1 | 172.16.4.2 | 172.16.4.3 |
+| **VLAN 20 (HR)** | 172.16.4.128/25 | 255.255.255.128 | 126 | 172.16.4.129 | 172.16.4.130 | 172.16.4.131 |
+| **VLAN 30 (Finance)** | 172.16.5.0/25 | 255.255.255.128 | 126 | 172.16.5.1 | 172.16.5.2 | 172.16.5.3 |
+| **VLAN 40 (Engg)** | 172.16.5.128/25 | 255.255.255.128 | 126 | 172.16.5.129 | 172.16.5.130 | 172.16.5.131 |
+
+### HSRP Priority Plan
+
+| Switch | VLAN 10 | VLAN 20 | VLAN 30 | VLAN 40 |
+|--------|---------|---------|---------|---------|
+| **CORE-SW1** | ✅ Active (150) | ✅ Active (150) | ⏳ Standby (100) | ⏳ Standby (100) |
+| **CORE-SW2** | ⏳ Standby (100) | ⏳ Standby (100) | ✅ Active (150) | ✅ Active (150) |
+
+---
+
+## ⚙️ Configuration Snippets
+
+### Access Switch Trunk (ACCE-SW1)
+
+```ios
 interface gi3/2
  switchport trunk encapsulation dot1q
  switchport mode trunk
@@ -70,66 +95,217 @@ interface gi3/2
  no shutdown
 ```
 
-Core switch EtherChannel and HSRP (example):
+### Core Switch EtherChannel (CORE-SW1)
 
-```
-! EtherChannel (LACP) to peer
+```ios
+! EtherChannel (LACP) to CORE-SW2
 interface range gi0/0 - 1
  switchport trunk encapsulation dot1q
  switchport mode trunk
+ switchport trunk native vlan 1
  switchport trunk allowed vlan 10,20,30,40
  channel-group 1 mode active
-!
+ no shutdown
+
 interface port-channel 1
  switchport mode trunk
  switchport trunk allowed vlan 10,20,30,40
-!
-interface Vlan10
+ no shutdown
+```
+
+### Core Switch HSRP (CORE-SW1 — Active for VLAN 10)
+
+```ios
+interface vlan 10
  ip address 172.16.4.2 255.255.255.128
  standby 10 ip 172.16.4.1
  standby 10 priority 150
  standby 10 preempt
+ no shutdown
 ```
 
-## Verification & common commands
-
-- Access switches: `show vlan brief`, `show interface trunk`, `show cdp neighbors`, `show spanning-tree brief`
-- Core switches: `show standby brief`, `show ip ospf neighbor`, `show etherchannel summary`, `show spanning-tree root`
-- End hosts: `ping <gateway>` (HSRP virtual IP), DHCP request and inter-VLAN ping tests
-
-Screenshots and step-by-step verification are available under `Screenshots/`.
-
-## Lessons learned
-
-- HSRP requires consistent VLAN configuration on peers for reliable operation
-- EtherChannel in GNS3/EVE-NG behaves more predictably with LACP (active/passive)
-- PortFast + BPDU Guard reduces STP convergence delays on access ports
-- Native VLAN mismatches cause CDP/trunking issues — always verify `show interface trunk`
-
-## Future improvements
-
-- Add MLS QoS for traffic prioritization
-- Implement DHCP Snooping and other security features
-- Extend topology and configurations to support IPv6 and HSRPv6
-
-## Repo structure
-
-High-Availability-Campus-Network/
-- README.md
-- Project highlight availibility .md
-- GNS File/
-- Screenshots/
-- (Optional) ansible/, configs/, docs/, tests/ — see repository for available directories
-
-## License
-
-MIT License — see LICENSE file if present.
+**[📄 Full Configs](./configs/)**
 
 ---
 
-If you want, I can:
-- Add a short topology diagram (drawio) into docs/ or lab/
-- Add sample Ansible inventory and a minimal site.yml to bootstrap the lab
-- Add example IOS/NX-OS config files into configs/
+## ✅ Verification & Validation
 
-Tell me which addition you'd like next and I'll add it.
+### 1. Access Switches
+
+| Command | Purpose |
+|---------|---------|
+| `show vlan brief` | Verify VLAN database and port assignments |
+| `show interface trunk` | Verify trunking status and allowed VLANs |
+| `show cdp neighbors` | Verify CDP neighbors connected to Core Switches |
+| `show spanning-tree brief` | Verify STP status and port states |
+
+**[📷 Screenshots](./Screenshots/Access-Switches/)**
+
+### 2. Core Switches
+
+| Command | Purpose |
+|---------|---------|
+| `show standby brief` | Verify HSRP Active/Standby states and Virtual IPs |
+| `show ip ospf neighbor` | Verify OSPF neighbor adjacency (should be FULL) |
+| `show etherchannel summary` | Verify EtherChannel status |
+| `show spanning-tree root` | Verify STP root bridge information |
+
+**[📷 Screenshots](./Screenshots/Core-Switches/)**
+
+### 3. End Hosts
+
+| Command | Purpose |
+|---------|---------|
+| `ip dhcp` | Request IP from DHCP server |
+| `ping 172.16.4.1` | Ping HSRP Virtual Gateway |
+| `ping 172.16.5.11` | Ping host in different VLAN |
+| `trace 1.1.1.1` | Traceroute to Core Router |
+
+**[📷 Screenshots](./Screenshots/End-Hosts/)**
+
+---
+
+## 🔬 Live Failover Test
+
+### Step 1: Start Continuous Ping
+```cmd
+ping -t 172.16.4.1
+```
+
+### Step 2: Shut Down Active SVI on CORE-SW1
+```ios
+CORE-SW1(config)# interface vlan 10
+CORE-SW1(config-if)# shutdown
+```
+
+### Step 3: Verify Standby Becomes Active
+```ios
+CORE-SW2# show standby brief
+```
+✅ **CORE-SW2 transitions to Active — Zero packet loss!**
+
+### Step 4: Restore Interface (Preempt Verification)
+```ios
+CORE-SW1(config)# interface vlan 10
+CORE-SW1(config-if)# no shutdown
+```
+✅ **CORE-SW1 reclaims Active role (Preempt)**
+
+**[📷 Failover Screenshots](./Screenshots/Failover-Test/)**
+
+---
+
+## 📚 Lessons Learned
+
+| Challenge | Solution |
+|-----------|----------|
+| **Native VLAN mismatch** | Always verify `show interface trunk` — mismatch causes CDP errors |
+| **EtherChannel in GNS3** | LACP (active/passive) works more reliably than manual mode |
+| **HSRP Preempt** | Critical to ensure Active switch reclaims role after restoration |
+| **PortFast + BPDU Guard** | Essential to prevent STP loops on access ports |
+
+---
+
+## 🚀 Future Improvements
+
+- [ ] Add **MLS QoS** for traffic prioritization
+- [ ] Implement **DHCP Snooping** for security
+- [ ] Extend to **IPv6** with HSRPv6
+- [ ] Add **Ansible Automation** for deployment
+- [ ] Integrate **Syslog & SNMP** for monitoring
+
+---
+
+## 📂 Repository Structure
+
+```
+High-Availability-Campus-Network/
+├── README.md
+├── configs/
+│   ├── CORE-SW1.txt
+│   ├── CORE-SW2.txt
+│   └── ACC-SW1.txt
+├── GNS-File/
+│   └── Project2.gns3
+├── Screenshots/
+│   ├── Access-Switches/
+│   ├── Core-Switches/
+│   ├── End-Hosts/
+│   ├── Failover-Test/
+│   └── Topology/
+├── tests/
+│   └── check_reachability.sh
+└── LICENSE
+```
+
+---
+
+## 🛠️ Quickstart
+
+### Clone the Repository
+```bash
+git clone https://github.com/kamleshsande85/High-Availability-Campus-Network.git
+cd High-Availability-Campus-Network
+```
+
+### Open in GNS3
+1. Open GNS3 → File → Open Project
+2. Select `GNS-File/Project2.gns3`
+3. Start all devices
+
+### Verify Connectivity
+```bash
+./tests/check_reachability.sh
+```
+
+---
+
+## 📄 License
+
+MIT License — see [LICENSE](./LICENSE) file for details.
+
+---
+
+## 🤝 Connect
+
+**Kamlesh Kumar** — [LinkedIn]([https://linkedin.com/in/kamleshsande85](https://www.linkedin.com/in/kamlesh-kumar-9921282bb/)   ) | [GitHub]([https://github.com/kamleshsande85](https://github.com/kamleshsande85))
+
+
+---
+
+⭐ **If you find this useful, please consider giving it a star!** ⭐
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
