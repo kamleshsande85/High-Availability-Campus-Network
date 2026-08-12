@@ -1,4 +1,3 @@
-
 # 🏗️ High-Availability Campus Network
 
 [![GNS3](https://img.shields.io/badge/GNS3-2.2-green)](https://www.gns3.com/)
@@ -35,32 +34,55 @@ This project demonstrates a **production-ready campus network** with:
 ## 🏗️ Network Topology
 
 ```
-                          ┌─────────────────────────────────────┐
-                          │          Core Routers              │
-                          │   CORE-Router-1    CORE-Router-2  │
-                          └──────────────┬──────────────────────┘
-                                         │
-                          ┌──────────────┴──────────────────────┐
-                          │        Distribution Switches       │
-                          │   CORE-SW1 (HSRP Active)          │
-                          │   CORE-SW2 (HSRP Standby)         │
-                          └──────────────┬──────────────────────┘
-                                         │
-                          ┌──────────────┴──────────────────────┐
-                          │           Access Switches          │
-                          │   ACC-SW1, ACC-SW2, ACC-SW3        │
-                          └─────────────────────────────────────┘
+                           ┌───────────────────────────────┐
+                           │     CORE Routers              │
+                           │  CORE-R1      CORE-R2         │
+                           └───────┬──────────┬─────────────┘
+                                   │          │
+                    ┌──────────────┴──────────┴──────────────┐
+                    │                                         │
+              Gi0/2 │                                    Gi0/2 │
+            ┌───────▼──────────┐                  ┌───────────▼────┐
+            │   CORE-SW1       │ ◄─ EtherChannel ► │   CORE-SW2     │
+            │   (Active)       │     (LACP)        │   (Standby)    │
+            │  HSRP Priority   │                   │  HSRP Priority │
+            │  V10: 150        │     Gi0/0-Gi0/1   │  V10: 100      │
+            │  V20: 150        │◄─────────────────►│  V20: 100      │
+            │  V30: 100        │                   │  V30: 150      │
+            │  V40: 100        │                   │  V40: 150      │
+            └────┬──────────────┘                  └────┬───────────┘
+                 │ Gi0/3 (Trunk)                        │ Gi0/3 (Trunk)
+                 │                                      │
+         ┌───────┴──────────────────────────────────────┴────────┐
+         │                                                        │
+    Gi3/2│                                                   Gi3/2│
+    ┌────▼─────────┐     ┌──────────────┐     ┌──────────────┐   │
+    │   ACC-SW1    │     │   ACC-SW2    │     │   ACC-SW3    │   │
+    │  (Access)    │     │  (Access)    │     │  (Access)    │   │
+    └─────┬────────┘     └──────┬───────┘     └──────┬───────┘   │
+          │                     │                    │            │
+    ┌─────┴──────┐        ┌─────┴──────┐       ┌─────┴──────┐    │
+    │   PC1      │        │   PC2      │       │   PC3      │    │
+    │ VLAN 10    │        │ VLAN 20    │       │ VLAN 30    │    │
+    └────────────┘        └────────────┘       └────────────┘    │
+                                                                   │
+                                        ┌──────────────────┐      │
+                                        │   DHCP Server    │      │
+                                        │                  │      │
+                                        └──────────────────┘      │
 ```
 
-**[📷 View Topology Diagram](./Screenshots/Topology/topology.png)**
+**[📷 View Detailed Topology Diagram](./Screenshots/Topology/Network-Topology-Main.png)**
 
 ### Physical Connections
 
-| Link | Source Device | Source Port | Destination Device | Destination Port |
-|------|---------------|-------------|-------------------|------------------|
-| **EtherChannel (LACP)** | CORE-SW1 | Gi0/0, Gi0/1 | CORE-SW2 | Gi0/0, Gi0/1 |
-| **Trunk 1** | CORE-SW1 | Gi0/3 | ACC-SW1 | Gi3/2 |
-| **Trunk 2** | CORE-SW2 | Gi0/3 | ACC-SW2 | Gi3/2 |
+| Link | Source Device | Source Port | Destination Device | Destination Port | Type |
+|------|---------------|-------------|-------------------|------------------|------|
+| **EtherChannel (LACP)** | CORE-SW1 | Gi0/0, Gi0/1 | CORE-SW2 | Gi0/0, Gi0/1 | Trunk |
+| **Trunk 1** | CORE-SW1 | Gi0/3 | ACC-SW1 | Gi3/2 | Trunk |
+| **Trunk 2** | CORE-SW2 | Gi0/3 | ACC-SW2 | Gi3/2 | Trunk |
+| **Access 1** | ACC-SW1 | Gi1/1, Gi1/2 | PC1, PC2 | eth0 | Access |
+| **Access 2** | ACC-SW2 | Gi1/1, Gi1/2 | PC3, PC4 | eth0 | Access |
 
 ---
 
@@ -84,7 +106,7 @@ This project demonstrates a **production-ready campus network** with:
 
 ## ⚙️ Configuration Snippets
 
-### Access Switch Trunk (ACCE-SW1)
+### Access Switch Trunk (ACC-SW1)
 
 ```ios
 interface gi3/2
@@ -139,7 +161,7 @@ interface vlan 10
 | `show cdp neighbors` | Verify CDP neighbors connected to Core Switches |
 | `show spanning-tree brief` | Verify STP status and port states |
 
-**[📷 Screenshots](./Screenshots/Access-Switches/)**
+**[📷 Screenshots](./Screenshots/ACC-SW1/)**
 
 ### 2. Core Switches
 
@@ -150,7 +172,7 @@ interface vlan 10
 | `show etherchannel summary` | Verify EtherChannel status |
 | `show spanning-tree root` | Verify STP root bridge information |
 
-**[📷 Screenshots](./Screenshots/Core-Switches/)**
+**[📷 Screenshots](./Screenshots/CORE-SW1/)**
 
 ### 3. End Hosts
 
@@ -161,7 +183,7 @@ interface vlan 10
 | `ping 172.16.5.11` | Ping host in different VLAN |
 | `trace 1.1.1.1` | Traceroute to Core Router |
 
-**[📷 Screenshots](./Screenshots/End-Hosts/)**
+**[📷 Screenshots](./Screenshots/PC2/)**
 
 ---
 
@@ -191,7 +213,7 @@ CORE-SW1(config-if)# no shutdown
 ```
 ✅ **CORE-SW1 reclaims Active role (Preempt)**
 
-**[📷 Failover Screenshots](./Screenshots/Failover-Test/)**
+**[📷 Failover Screenshots](./Screenshots/CORE-SW1/)**
 
 ---
 
@@ -228,11 +250,16 @@ High-Availability-Campus-Network/
 ├── GNS-File/
 │   └── Project2.gns3
 ├── Screenshots/
-│   ├── Access-Switches/
-│   ├── Core-Switches/
-│   ├── End-Hosts/
-│   ├── Failover-Test/
+│   ├── ACC-SW1/
+│   ├── ACC-SW2/
+│   ├── CORE-SW1/
+│   ├── CORE-SW2/
+│   ├── PC2/
+│   ├── PC5/
 │   └── Topology/
+│       ├── Network-Topology-Main.png
+│       ├── Network_Topology3.png
+│       └── Network_topology2.png
 ├── tests/
 │   └── check_reachability.sh
 └── LICENSE
@@ -268,44 +295,8 @@ MIT License — see [LICENSE](./LICENSE) file for details.
 
 ## 🤝 Connect
 
-**Kamlesh Kumar** — [LinkedIn]([https://linkedin.com/in/kamleshsande85](https://www.linkedin.com/in/kamlesh-kumar-9921282bb/)   ) | [GitHub]([https://github.com/kamleshsande85](https://github.com/kamleshsande85))
-
+**Kamlesh Kumar** — [LinkedIn](https://www.linkedin.com/in/kamlesh-kumar-9921282bb/) | [GitHub](https://github.com/kamleshsande85)
 
 ---
 
 ⭐ **If you find this useful, please consider giving it a star!** ⭐
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
